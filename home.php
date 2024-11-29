@@ -1,137 +1,110 @@
-<?php 
-include 'admin/db_connect.php'; 
-?>
+<?php include 'db_connect.php' ?>
 <style>
-    #portfolio .img-fluid{
-        width: calc(100%);
-        height: 30vh;
-        z-index: -1;
-        position: relative;
-        padding: 1em;
-    }
-    .event-list{
-        cursor: pointer;
-    }
-    span.highlight{
-        background: yellow;
-    }
-    .banner{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 26vh;
-        width: calc(30%);
-    }
-    .banner img{
-        width: calc(100%);
-        height: calc(100%);
-        cursor :pointer;
-    }
-    .event-list{
-        cursor: pointer;
-        border: unset;
-        flex-direction: inherit;
-    }
-    .event-list .banner {
-        width: calc(40%)
-    }
-    .event-list .card-body {
-        width: calc(60%)
-    }
-    .event-list .banner img {
-        border-top-left-radius: 5px;
-        border-bottom-left-radius: 5px;
-        min-height: 50vh;
-    }
-    span.highlight{
-        background: yellow;
-    }
-    .banner{
-        min-height: calc(100%)
-    }
+   span.float-right.summary_icon {
+    font-size: 3rem;
+    position: absolute;
+    right: 1rem;
+    color: #ffffff96;
+}
+.imgs{
+		margin: .5em;
+		max-width: calc(100%);
+		max-height: calc(100%);
+	}
+	.imgs img{
+		max-width: calc(100%);
+		max-height: calc(100%);
+		cursor: pointer;
+	}
+	#imagesCarousel,#imagesCarousel .carousel-inner,#imagesCarousel .carousel-item{
+		height: 60vh !important;background: black;
+	}
+	#imagesCarousel .carousel-item.active{
+		display: flex !important;
+	}
+	#imagesCarousel .carousel-item-next{
+		display: flex !important;
+	}
+	#imagesCarousel .carousel-item img{
+		margin: auto;
+	}
+	#imagesCarousel img{
+		width: auto!important;
+		height: auto!important;
+		max-height: calc(100%)!important;
+		max-width: calc(100%)!important;
+	}
 </style>
 
-<header class="masthead">
-    <div class="container-fluid h-100">
-        <div class="row h-100 align-items-center justify-content-center text-center">
-            <div class="col-lg-8 align-self-end mb-4 page-title">
-                <h3 class="text-white">Welcome to Sports Tournament System</h3>
-                <hr class="divider my-4" />
+<div class="containe-fluid">
+	<div class="row mt-3 ml-3 mr-3">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <?php echo "Welcome back ". $_SESSION['login_name']."!"  ?>
+                    <hr>	
 
-                <div class="col-md-12 mb-2 justify-content-center">
-                </div>                        
-            </div>
-        </div>
-    </div>
-</header>
-
-<div class="container mt-3 pt-2">
-    <h4 class="text-center text-white">Upcoming Tournaments</h4>
-    <hr class="divider">
-
-    <?php
-    // Query to fetch upcoming tournaments
-    $tournaments = $conn->query("
-        SELECT * 
-        FROM tournaments 
-        WHERE DATE(schedule) >= '" . date('Y-m-d') . "' 
-        AND status = 'Open' 
-        ORDER BY schedule ASC
-    ");
-    
-    // Loop through the fetched tournaments
-    while ($row = $tournaments->fetch_assoc()):
-        // Sanitize description for display
-        $trans = get_html_translation_table(HTML_ENTITIES, ENT_QUOTES);
-        unset($trans["\""], $trans["<"], $trans[">"], $trans["<h2"]);
-        $desc = strtr(html_entity_decode($row['description']), $trans);
-        $desc = str_replace(array("<li>", "</li>"), array("", ","), $desc);
-    ?>
-    <div class="card tournament-list" data-id="<?php echo $row['id'] ?>">
-        <div class='banner'>
-            <!-- Optional: Add a tournament-specific banner here -->
-        </div>
-        <div class="card-body">
-            <div class="row align-items-center justify-content-center text-center h-100">
-                <div class="">
-                    <h3><b class="filter-txt"><?php echo ucwords($row['name']) ?></b></h3>
-                    <div><small><p><b><i class="fa fa-calendar"></i> <?php echo date("F d, Y h:i A", strtotime($row['schedule'])) ?></b></p></small></div>
-                    <hr>
-                    <larger class="truncate filter-txt"><?php echo strip_tags($desc) ?></larger>
-                    <br>
-                    <hr class="divider" style="max-width: calc(80%)">
-                    <button class="btn btn-primary float-right register-btn" data-tournament-id="<?php echo $row['id'] ?>">Register</button>
+                    
                 </div>
-            </div>
+            </div>      			
         </div>
     </div>
-    <br>
-    <?php endwhile; ?>
 </div>
-
 <script>
-    // Handle the Register button click
-    $('.register-btn').click(function() {
-        var tournamentId = $(this).data('tournament-id');
-        // Redirect to the registration page for the selected tournament
-        location.href = "view_tournament.php?id=" + tournamentId;
-    });
+	$('#manage-records').submit(function(e){
+        e.preventDefault()
+        start_load()
+        $.ajax({
+            url:'ajax.php?action=save_track',
+            data: new FormData($(this)[0]),
+            cache: false,
+            contentType: false,
+            processData: false,
+            method: 'POST',
+            type: 'POST',
+            success:function(resp){
+                resp=JSON.parse(resp)
+                if(resp.status==1){
+                    alert_toast("Data successfully saved",'success')
+                    setTimeout(function(){
+                        location.reload()
+                    },800)
 
-    $('.banner img').click(function(){
-        viewer_modal($(this).attr('src'));
-    });
-
-    $('#filter').keyup(function(e){
-        var filter = $(this).val();
-
-        $('.card.event-list .filter-txt').each(function(){
-            var txto = $(this).html();
-            txt = txto;
-            if((txt.toLowerCase()).includes((filter.toLowerCase())) == true){
-                $(this).closest('.card').toggle(true);
-            }else{
-                $(this).closest('.card').toggle(false);
+                }
+                
             }
-        });
-    });
+        })
+    })
+    $('#tracking_id').on('keypress',function(e){
+        if(e.which == 13){
+            get_person()
+        }
+    })
+    $('#check').on('click',function(e){
+            get_person()
+    })
+    function get_person(){
+            start_load()
+        $.ajax({
+                url:'ajax.php?action=get_pdetails',
+                method:"POST",
+                data:{tracking_id : $('#tracking_id').val()},
+                success:function(resp){
+                    if(resp){
+                        resp = JSON.parse(resp)
+                        if(resp.status == 1){
+                            $('#name').html(resp.name)
+                            $('#address').html(resp.address)
+                            $('[name="person_id"]').val(resp.id)
+                            $('#details').show()
+                            end_load()
+
+                        }else if(resp.status == 2){
+                            alert_toast("Unknow tracking id.",'danger');
+                            end_load();
+                        }
+                    }
+                }
+            })
+    }
 </script>
