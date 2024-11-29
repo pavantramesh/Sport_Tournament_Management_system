@@ -1,4 +1,4 @@
-Free Download Source Code "Event_Management_System"
+Free Download Source Code "Sport_Tournament_Management_system"
 
 FIRST Download
 
@@ -20,7 +20,7 @@ FIRST Download
 
 6. Import event_db.sql file(given inside the zip package in SQL file folder)
 
-7.Run the script http://localhost/Event_Management_System
+7.Run the script http://localhost/Sport_Tournament_Management_system
 
 
 **LOGIN DETAILS** 
